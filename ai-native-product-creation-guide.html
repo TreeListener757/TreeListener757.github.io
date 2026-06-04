@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Native 产品创作指南 · Human-in-the-Loop</title>
+<meta name="description" content="人在整个创作过程中是 Loop 中主动的一环——你和 AI 彼此激发、彼此启发，共同迭代出更好的想法。面向 InnoX 学生，WorkBuddy 原生环境实操。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF9F7;
+    --paper2: #F2F0EA;
+    --ink: #1A1A1A;
+    --ink2: #3D3A36;
+    --muted: #6B6762;
+    --line: #D9D4CA;
+    --accent: #2F5D4F;
+    --accent-light: #4A8B78;
+    --red: #C2410C;
+    --blue: #215FB8;
+    --yellow: #E4AD34;
+    --green: #24724F;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --shadow-sm: 0 1px 3px rgba(24,23,21,0.06);
+    --shadow: 0 4px 16px rgba(24,23,21,0.08);
+    --shadow-lg: 0 12px 40px rgba(24,23,21,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background:
+      linear-gradient(90deg, rgba(24,23,21,0.025) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(24,23,21,0.025) 1px, transparent 1px),
+      var(--paper);
+    background-size: 32px 32px;
+    color: var(--ink);
+    font-family: 'Noto Serif SC', Georgia, 'Source Han Serif SC', serif;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.01em;
+  }
+
+  #progressBar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--purple); z-index: 200; width: 0;
+    transition: width 0.12s linear;
+  }
+
+  ::selection { background: rgba(124,58,237,0.18); }
+
+  /* ── Navigation ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(24,23,21,0.08);
+    background: rgba(250,249,247,0.88);
+    backdrop-filter: blur(16px);
+  }
+  .topbar-inner {
+    max-width: 1120px; margin: 0 auto;
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Inter', 'JetBrains Mono', monospace;
+    font-weight: 800; font-size: 15px; white-space: nowrap;
+    color: var(--ink); text-decoration: none;
+  }
+  .brand-mark {
+    width: 22px; height: 22px;
+    border: 2px solid var(--ink);
+    background: linear-gradient(135deg, var(--purple) 0 48%, transparent 48% 52%, var(--accent) 52% 100%);
+    box-shadow: 3px 3px 0 var(--yellow);
+  }
+  .nav { display: flex; align-items: center; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a {
+    color: var(--muted); font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px; font-weight: 700; padding: 8px 10px;
+    white-space: nowrap; text-decoration: none;
+  }
+  .nav a:hover { color: var(--ink); }
+
+  /* ── Hero ── */
+  .hero {
+    max-width: 1120px; margin: 0 auto;
+    padding: 80px 28px 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+    gap: 48px; align-items: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--purple); font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px; font-weight: 900; letter-spacing: 0.16em;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .hero-eyebrow::before { content: ''; width: 36px; height: 2px; background: currentColor; }
+  .hero h1 {
+    max-width: 740px; font-size: clamp(40px, 6.5vw, 76px);
+    line-height: 1.05; font-weight: 950; margin-bottom: 22px;
+  }
+  .hero-desc {
+    max-width: 580px; color: var(--muted);
+    font-size: clamp(17px, 2vw, 21px); line-height: 1.6;
+    font-family: 'Noto Sans SC', sans-serif;
+    margin-bottom: 32px;
+  }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 46px; padding: 12px 20px;
+    border: 2px solid var(--ink); border-radius: 6px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 800; font-size: 15px; cursor: pointer;
+    text-decoration: none; transition: all 160ms ease;
+  }
+  .btn-primary {
+    background: var(--ink); color: var(--paper);
+    box-shadow: 5px 5px 0 rgba(24,23,21,0.16);
+  }
+  .btn-secondary {
+    background: var(--paper); color: var(--ink);
+    box-shadow: 5px 5px 0 rgba(24,23,21,0.10);
+  }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 rgba(24,23,21,0.22); }
+
+  /* ── Loop Diagram ── */
+  .loop-board {
+    padding: 26px 22px;
+    border: 2px solid var(--ink);
+    background: #fff;
+    box-shadow: 14px 14px 0 var(--ink);
+  }
+  .loop-title {
+    color: var(--muted); font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px; font-weight: 900; letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  .loop-node {
+    display: grid; grid-template-columns: 38px 1fr; gap: 14px;
+    align-items: start; border: 1px solid var(--line);
+    background: #fff; padding: 13px 14px; margin-bottom: 10px;
+  }
+  .loop-node:last-child { margin-bottom: 0; }
+  .loop-num {
+    display: grid; place-items: center;
+    width: 34px; height: 34px; color: #fff;
+    background: var(--ink); font-family: 'Inter', sans-serif;
+    font-weight: 900; font-size: 13px;
+  }
+  .loop-node:nth-child(1) .loop-num { background: var(--purple); }
+  .loop-node:nth-child(2) .loop-num { background: var(--accent); }
+  .loop-node:nth-child(3) .loop-num { background: var(--blue); }
+  .loop-node:nth-child(4) .loop-num { background: var(--yellow); color: var(--ink); }
+  .loop-node:nth-child(5) .loop-num { background: var(--red); }
+  .loop-node:nth-child(6) .loop-num { background: var(--green); }
+  .loop-node-title { font-family: 'Noto Sans SC', sans-serif; font-weight: 800; font-size: 14px; margin-bottom: 2px; }
+  .loop-node-desc { color: var(--muted); font-size: 13px; line-height: 1.5; font-family: 'Noto Sans SC', sans-serif; }
+  .loop-arrow {
+    text-align: center; color: var(--line); font-size: 18px;
+    padding: 2px 0; font-family: 'Inter', sans-serif;
+  }
+
+  /* ── Sections ── */
+  .section {
+    max-width: 1120px; margin: 0 auto; padding: 72px 28px;
+  }
+  .sec-head {
+    display: grid;
+    grid-template-columns: minmax(0, 0.78fr) minmax(220px, 0.42fr);
+    gap: 36px; align-items: end;
+    margin-bottom: 36px;
+    border-top: 3px solid var(--ink);
+    padding-top: 32px;
+  }
+  .sec-head h2 {
+    font-size: clamp(32px, 4.5vw, 56px);
+    line-height: 1.08; font-weight: 900;
+  }
+  .sec-note {
+    color: var(--muted); font-family: 'Noto Sans SC', sans-serif;
+    font-size: 16px; line-height: 1.6;
+  }
+
+  /* ── Chapter markers ── */
+  .chapter-num {
+    font-family: 'Inter', 'JetBrains Mono', monospace;
+    font-weight: 700; color: var(--purple);
+    letter-spacing: 0.04em; font-size: 1.05rem;
+  }
+  .chapter-tag {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.8rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ── Prose ── */
+  .prose {
+    max-width: 780px; margin: 0 auto;
+    font-size: 1.08rem; line-height: 1.9; color: var(--ink2);
+  }
+  .prose strong { color: var(--ink); font-weight: 700; }
+  .lead {
+    font-size: 1.3rem; line-height: 1.75; color: var(--ink);
+    font-weight: 500; margin-bottom: 20px;
+  }
+  .pull {
+    border-left: 3px solid var(--purple);
+    padding: 0.2rem 0 0.2rem 1.6rem;
+    font-size: 1.2rem; line-height: 1.7; color: var(--ink);
+  }
+  .sinking {
+    position: relative; display: inline-block;
+  }
+  .sinking::after {
+    content: ''; position: absolute; left: 0; bottom: 2px;
+    width: 100%; height: 4px; background-color: var(--purple);
+    transform: rotate(-1.3deg); transform-origin: left center; opacity: 0.85;
+  }
+
+  /* ── Step Numbered List ── */
+  .step-item {
+    display: flex; gap: 18px; margin-bottom: 28px;
+  }
+  .step-num {
+    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.9rem;
+    color: var(--paper); background: var(--purple);
+    width: 2rem; height: 2rem; border-radius: 999px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .step-num.green { background: var(--accent); }
+  .step-num.red { background: var(--red); }
+  .step-num.blue { background: var(--blue); }
+  .step-num.yellow { background: var(--yellow); color: var(--ink); }
+  .step-content h4 {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .step-content p { font-family: 'Noto Sans SC', sans-serif; color: var(--ink2); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── Modules ── */
+  .module {
+    display: grid;
+    grid-template-columns: minmax(200px, 0.34fr) minmax(0, 0.66fr);
+    gap: 30px; align-items: start;
+    border-top: 1px solid var(--line);
+    padding: 36px 0;
+  }
+  .mod-num {
+    display: inline-grid; place-items: center;
+    width: 42px; height: 42px; background: var(--ink);
+    color: var(--paper); font-family: 'Inter', sans-serif;
+    font-weight: 900; font-size: 15px; margin-bottom: 14px;
+  }
+  .mod-num.purple { background: var(--purple); }
+  .mod-num.green { background: var(--accent); }
+  .mod-num.blue { background: var(--blue); }
+  .mod-num.yellow { background: var(--yellow); color: var(--ink); }
+  .mod-num.red { background: var(--red); }
+
+  .module h3 {
+    font-size: clamp(24px, 3vw, 40px); line-height: 1.1;
+    font-weight: 900; margin-bottom: 10px;
+  }
+  .mod-summary { color: var(--muted); font-family: 'Noto Sans SC', sans-serif; font-size: 16px; }
+  .mod-body { display: grid; gap: 16px; }
+  .mod-body p, .mod-body li, .mod-body td {
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+
+  /* ── Callouts ── */
+  .callout {
+    border-left: 5px solid var(--blue);
+    background: rgba(255,255,255,0.68);
+    padding: 16px 20px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.95rem; line-height: 1.7;
+  }
+  .callout.info { border-left-color: var(--purple); background: rgba(124,58,237,0.04); }
+  .callout.warn { border-left-color: var(--red); background: rgba(194,65,12,0.04); }
+  .callout.tip { border-left-color: var(--green); background: rgba(36,114,79,0.04); }
+  .callout.human { border-left-color: var(--yellow); background: rgba(228,173,52,0.06); }
+  .callout strong { display: block; margin-bottom: 6px; color: var(--ink); font-size: 0.95rem; }
+
+  /* ── Tables ── */
+  .tbl { width: 100%; border-collapse: collapse; font-family: 'Noto Sans SC', sans-serif; font-size: 14px; }
+  .tbl th {
+    text-align: left; font-weight: 800; color: var(--ink);
+    border-bottom: 2px solid var(--purple); padding: 10px 12px;
+    background: rgba(124,58,237,0.06);
+  }
+  .tbl td {
+    border-bottom: 1px solid var(--line); padding: 10px 12px;
+    color: var(--ink2); vertical-align: top; line-height: 1.65;
+  }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl td strong { color: var(--ink); font-weight: 700; }
+
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    border: 2px solid var(--ink);
+    background: #fff;
+    padding: 22px;
+    box-shadow: 7px 7px 0 rgba(24,23,21,0.10);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+  }
+  .card:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0 rgba(24,23,21,0.14); }
+  .card h3 { font-size: 1.25rem; font-weight: 900; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-family: 'Noto Sans SC', sans-serif; font-size: 0.93rem; line-height: 1.6; }
+  .card-tag {
+    display: inline-block; font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--purple); margin-bottom: 12px;
+  }
+
+  /* ── Copy Row ── */
+  .copy-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px; align-items: stretch;
+  }
+  .copy-text {
+    display: block; min-width: 0; overflow-x: auto;
+    border: 1px solid var(--line); background: var(--ink);
+    color: var(--paper); padding: 11px 14px;
+    font-family: 'JetBrains Mono', 'Noto Sans SC', monospace;
+    font-size: 13px; line-height: 1.65; white-space: pre-wrap;
+  }
+  .copy-btn {
+    min-width: 80px; border: 2px solid var(--ink); border-radius: 6px;
+    background: var(--yellow); color: var(--ink); padding: 10px 14px;
+    font-family: 'Noto Sans SC', sans-serif; font-weight: 900; font-size: 13px;
+    cursor: pointer; box-shadow: 4px 4px 0 rgba(24,23,21,0.12);
+    transition: all 160ms ease;
+  }
+  .copy-btn:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 rgba(24,23,21,0.18); }
+  .copy-btn.copied { background: var(--green); color: #fff; }
+
+  /* ── Two-col layout ── */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+  }
+  .col-card {
+    border: 2px solid var(--ink); padding: 24px; background: #fff;
+    box-shadow: 8px 8px 0 rgba(24,23,21,0.08);
+  }
+  .col-card h4 {
+    font-size: 1.3rem; font-weight: 900; margin-bottom: 12px;
+  }
+  .col-card ul { padding-left: 20px; }
+  .col-card li { font-family: 'Noto Sans SC', sans-serif; color: var(--ink2); font-size: 0.93rem; margin-bottom: 8px; line-height: 1.6; }
+
+  /* ── Quotes ── */
+  .quotes-section {
+    background: var(--ink); color: var(--paper);
+    padding: 72px 28px;
+  }
+  .quotes-section blockquote {
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 800; line-height: 1.5;
+    max-width: 800px; margin: 0 auto 36px;
+  }
+  .quotes-section blockquote:last-child { margin-bottom: 0; }
+
+  /* ── Case Study Badge ── */
+  .case-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--purple); color: #fff;
+    padding: 6px 16px; border-radius: 4px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px; font-weight: 900; letter-spacing: 0.1em;
+  }
+
+  /* ── Timeline ── */
+  .timeline {
+    position: relative; padding-left: 40px;
+    border-left: 3px solid var(--line);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 32px;
+  }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -49px; top: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--purple); border: 3px solid var(--paper);
+    box-shadow: 0 0 0 2px var(--purple);
+  }
+  .timeline-item:nth-child(2)::before { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .timeline-item:nth-child(3)::before { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+  .timeline-item:nth-child(4)::before { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow); }
+  .timeline-item:nth-child(5)::before { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .timeline-item:nth-child(6)::before { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .timeline-title {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 800; font-size: 1.1rem; margin-bottom: 6px;
+  }
+  .timeline-desc {
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink2); font-size: 0.93rem; line-height: 1.7;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 36px 28px 48px;
+    border-top: 2px solid var(--ink);
+    background: var(--ink);
+    color: rgba(250,249,247,0.76);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 14px;
+  }
+  .footer-inner {
+    max-width: 1120px; margin: 0 auto;
+    display: flex; justify-content: space-between; gap: 24px;
+  }
+  .footer a { color: var(--yellow); text-decoration: none; }
+
+  /* ── Animations ── */
+  .fade-up {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-up.in { opacity: 1; transform: none; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; right: 20px; bottom: 20px; z-index: 300;
+    border: 2px solid var(--ink); background: var(--green);
+    color: #fff; padding: 12px 16px;
+    font-family: 'Noto Sans SC', sans-serif; font-weight: 800; font-size: 14px;
+    box-shadow: 6px 6px 0 rgba(24,23,21,0.18);
+    transform: translateY(120px); opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 940px) {
+    .hero, .sec-head, .module, .two-col {
+      grid-template-columns: 1fr;
+    }
+    .hero { padding-top: 48px; }
+    .loop-board { box-shadow: 9px 9px 0 var(--ink); }
+  }
+  @media (max-width: 640px) {
+    .topbar-inner { align-items: flex-start; flex-direction: column; gap: 8px; }
+    .hero, .section { padding-left: 18px; padding-right: 18px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .copy-row { grid-template-columns: 1fr; }
+    .copy-btn { width: 100%; }
+    h1 { font-size: clamp(36px, 12vw, 54px); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progressBar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark"></span>
+      <span>AI Native 创作指南</span>
+    </a>
+    <nav class="nav">
+      <a href="#philosophy">理念</a>
+      <a href="#loop">双Loop</a>
+      <a href="#practice">实操流程</a>
+      <a href="#miniprogram">小程序案例</a>
+      <a href="#human-touch">你的成长</a>
+      <a href="#skills">工具箱</a>
+      <a href="#quotes">金句</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ════════ HERO ════════ -->
+<section class="hero">
+  <div>
+    <p class="hero-eyebrow">For InnoX Students · Human-in-the-Loop</p>
+    <h1>不是让 AI 替你做，<br>是让 AI 帮你想</h1>
+    <p class="hero-desc">
+      这份指南教你和 AI 一起创造产品——但你才是思考的主人。<strong>Human-in-the-Loop</strong>：人在整个创作过程中是 Loop 中主动的一环——你和 AI 彼此激发、彼此启发，共同迭代出更好的想法、更好的行动。你的元能力在每一次协作中成长，AI也变成更懂你的合作伙伴。全程在 WorkBuddy 里完成，零门槛。
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#loop">理解双Loop理念</a>
+      <a class="btn btn-secondary" href="#miniprogram">直接看小程序案例</a>
+    </div>
+  </div>
+
+  <aside class="loop-board" aria-label="创作循环">
+    <p class="loop-title">The Creation Loop</p>
+    <div class="loop-node">
+      <span class="loop-num">1</span>
+      <div>
+        <p class="loop-node-title">共情：理解真实的人</p>
+        <p class="loop-node-desc">走出房间，和目标用户聊天</p>
+      </div>
+    </div>
+    <div class="loop-arrow">↓</div>
+    <div class="loop-node">
+      <span class="loop-num">2</span>
+      <div>
+        <p class="loop-node-title">定义：把感受变成问题</p>
+        <p class="loop-node-desc">AI 帮你追问，你自己判断什么最重要</p>
+      </div>
+    </div>
+    <div class="loop-arrow">↓</div>
+    <div class="loop-node">
+      <span class="loop-num">3</span>
+      <div>
+        <p class="loop-node-title">构思：对话式探索</p>
+        <p class="loop-node-desc">你说直觉，AI 帮你澄清；AI 给方向，你质疑假设</p>
+      </div>
+    </div>
+    <div class="loop-arrow">↓</div>
+    <div class="loop-node">
+      <span class="loop-num">4</span>
+      <div>
+        <p class="loop-node-title">原型：让想法可以被触摸</p>
+        <p class="loop-node-desc">AI 快速搭建，你亲手打磨体验</p>
+      </div>
+    </div>
+    <div class="loop-arrow">↓</div>
+    <div class="loop-node">
+      <span class="loop-num">5</span>
+      <div>
+        <p class="loop-node-title">测试：让用户告诉你答案</p>
+        <p class="loop-node-desc">AI 分析反馈，你感受用户的犹豫和惊喜</p>
+      </div>
+    </div>
+    <div class="loop-arrow" style="color:var(--purple);">↺ 回到第1步</div>
+  </aside>
+</section>
+
+<!-- ════════ §0 核心理念 ════════ -->
+<section class="section" id="philosophy">
+  <div class="prose" style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+      <span class="chapter-num">§0</span>
+      <span class="chapter-tag">核心理念</span>
+    </div>
+    <h2 style="font-size:clamp(28px,3.5vw,44px);line-height:1.15;margin-bottom:24px;">Human-in-the-Loop：你在这件事里</h2>
+
+    <div style="border-left:3px solid var(--purple);padding:4px 0 4px 28px;margin-bottom:28px;">
+      <p style="font-size:clamp(24px,3vw,42px);font-weight:900;line-height:1.3;">
+        人和 AI 不是上下游，<br>是<span class="sinking">同一个 Loop 里的两个思考者</span>。
+      </p>
+    </div>
+
+    <p class="lead">
+      Human-in-the-Loop 说的不是「AI 做完了你来审核」——而是<strong>你在整个创作的循环里，是一个主动的、会思考的参与者</strong>。你提出直觉，AI 帮你澄清；AI 给一个方向，你质疑一个根本假设；你表达感受，AI 换个维度探索。你们<strong>彼此激发、彼此启发</strong>，产出的东西比任何一方独立工作都好。
+    </p>
+
+    <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:1.02rem;line-height:1.9;margin-bottom:20px;">
+      去观察那些真正用好 AI 的人，你会发现他们不是在筛选 AI 的方案，而是在和 AI <strong>对话</strong>。人说了一个模糊的直觉，AI 把它说清楚了；AI 给了一个逻辑自洽的方向，人质疑了一个 AI 不会质疑的假设。最终得到的东西，不是人想出来的，也不是 AI 想出来的——是<strong>他们一起想出来的</strong>。
+    </p>
+
+    <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:1.02rem;line-height:1.9;margin-bottom:20px;">
+      在这个过程中，<strong>你的元能力在成长</strong>——批判性思维、共情力、提问力——每一次你和 AI 的对话都在锻炼它们。<strong>AI 也变成了更懂你的合作伙伴</strong>——你质疑得越多，它给你的方向越准。这是一个正向的螺旋。
+    </p>
+
+    <div style="margin-top:28px;border:2px solid var(--purple);background:rgba(124,58,237,0.04);padding:28px;position:relative;">
+      <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:900;color:var(--purple);letter-spacing:0.12em;margin-bottom:16px;">人机协作的核心</p>
+      <p style="font-size:clamp(22px,2.8vw,36px);font-weight:900;line-height:1.4;margin-bottom:16px;">
+        更好的想法 = 人的<span style="color:var(--purple);">元能力</span> × AI 的<span style="color:var(--accent);">计算力</span>
+      </p>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.95rem;line-height:1.8;">
+        <strong>元能力</strong>：批判性思维、共情力、对意义的感知、对方向的判断——AI 不会自我质疑，反省只能人来做。<br>
+        <strong>计算力</strong>：知识广度、不知疲倦的执行力、毫秒级的方案生成——人永远追不上的速度和规模。<br><br>
+        两者相乘，不是相加。缺了任何一个因子，结果趋近于零。没有人的元能力，AI 产出的是精致的平庸；没有AI的计算力，人的洞察停在模糊的直觉。
+      </p>
+    </div>
+
+    <div class="two-col" style="margin-top:28px;">
+      <div class="col-card">
+        <h4 style="color:var(--purple);">🧠 你在 Loop 里成长</h4>
+        <ul>
+          <li><strong>批判性思维</strong>：每次质疑AI的方向，你在练习独立判断</li>
+          <li><strong>共情力</strong>：每次审查文案的语气，你在训练对人心的敏感</li>
+          <li><strong>元认知</strong>：每次问「我真正想问的是什么」，你在看清自己的思维</li>
+          <li><strong>提问力</strong>：好问题比好答案更重要——提问的能力在增长</li>
+          <li>你不是流水线上的一个环节——你是一个<strong>在成长的思考者</strong></li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <h4 style="color:var(--accent);">💛 产品中的人</h4>
+        <ul>
+          <li>不是「功能能不能实现」，而是<strong>「用户需不需要」</strong></li>
+          <li>不是「界面好不好看」，而是<strong>「用户感觉被理解了吗」</strong></li>
+          <li>每个文案、每个按钮、每个空态，都问：<strong>真实用户看到会怎么想？</strong></li>
+          <li>AI 不懂人的感受——<strong>你的共情力是产品灵魂的来源</strong></li>
+          <li>关键：每个决策点都<strong>回到真实的人</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout human" style="margin-top:28px;">
+      <strong>🧭 两条原则贯穿全程</strong>
+      <strong>Human-in-the-Loop</strong>：你在创作的 Loop 里是主动的——你提出AI不会自我质疑的问题，AI帮你把模糊的直觉变成可执行的方案。你们彼此激发，产出比任何一方独立工作都更好的结果。<br>
+      <strong>人在产品中</strong>：每一步都问「真实用户会怎么想？他们需要什么？他们害怕什么？」AI 做骨架，人填灵魂。<br><br>
+      这两条原则会贯穿整个创作过程。下面我们进入实操。
+    </div>
+  </div>
+</section>
+
+<!-- ════════ §1 双Loop方法论 ════════ -->
+<section class="section" id="loop" style="background:var(--paper2);margin:0;max-width:100%;padding-left:calc((100% - 1120px)/2 + 28px);padding-right:calc((100% - 1120px)/2 + 28px);">
+  <div class="prose" style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+      <span class="chapter-num">§1</span>
+      <span class="chapter-tag">方法论</span>
+    </div>
+    <h2 style="font-size:clamp(28px,3.5vw,44px);line-height:1.15;margin-bottom:24px;">创作六步法：不是流水线，是螺旋</h2>
+
+    <p style="color:var(--muted);font-family:'Noto Sans SC',sans-serif;margin-bottom:32px;font-size:1.05rem;">
+      这六步不是「做完1做2」的流水线。你随时可以回头——事实上，回头才是常态。AI 让回头的成本极低，所以不要怕推翻重来。
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <p class="timeline-title">Step 1 · 共情：找到真实的人</p>
+        <p class="timeline-desc">
+          不要在脑子里想象用户。<strong>走出去和真实的人聊</strong>——哪怕只是 3 个人。问他们：「你现在最困扰的是什么？」而不是「你觉得这个功能有用吗？」<br><br>
+          <strong>AI 怎么帮：</strong>帮你设计访谈提纲、帮你整理访谈笔记、帮你从对话里提取关键洞察。但 AI 不能帮你感受——<strong>你要亲自听、亲自看、亲自感受用户的表情和犹豫</strong>。
+        </p>
+        <div class="copy-row" style="margin-top:12px;">
+          <span class="copy-text">我要做[方向]的产品。帮我设计一份用户访谈提纲，5-8个问题，从开放式的经历聊起，不要问"你觉得这个功能好不好"这种引导性问题。</span>
+          <button class="copy-btn" data-copy="我要做[方向]的产品。帮我设计一份用户访谈提纲，5-8个问题，从开放式的经历聊起，不要问"你觉得这个功能好不好"这种引导性问题。">Copy</button>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <p class="timeline-title">Step 2 · 定义：把感受变成问题</p>
+        <p class="timeline-desc">
+          访谈之后你会得到一堆碎片。让 AI 帮你归纳，但<strong>你自己判断哪个洞察最值得做</strong>。一个好的问题定义是：「[人群]在[场景]中因为[原因]而无法[目标]」<br><br>
+          <strong>Human-in-Loop 关键点：</strong>AI 会给你很多「看起来合理」的问题定义。你要用你的共情力判断——这个定义<strong>真的反映了用户的痛</strong>，还是只是逻辑上说得通？
+        </p>
+        <div class="copy-row" style="margin-top:12px;">
+          <span class="copy-text">以下是访谈笔记：[粘贴笔记]。请你：1)找出3-5个关键洞察 2)每个洞察写一句问题定义 3)然后反过来追问我：你觉得哪个最重要？为什么？</span>
+          <button class="copy-btn" data-copy="以下是访谈笔记：[粘贴笔记]。请你：1)找出3-5个关键洞察 2)每个洞察写一句问题定义 3)然后反过来追问我：你觉得哪个最重要？为什么？">Copy</button>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <p class="timeline-title">Step 3 · 构思：探索，不是筛选</p>
+        <p class="timeline-desc">
+          这一步最容易误解：很多人把「构思」做成了「让 AI 生成 20 个方案，我选 3 个」——但这只是筛选，不是构思。<br><br>
+          真正的构思是<strong>对话式的探索</strong>：你说一个感受，AI 给一个方向；你质疑那个方向，AI 重新想；AI 提出一个角度，你发现它触动了什么，然后你把自己的真实感受说出来——这才是发散。<br><br>
+          <strong>两者的区别：</strong>
+        </p>
+        <div class="two-col" style="margin:14px 0 18px;">
+          <div class="col-card" style="border-color:#C2410C;box-shadow:4px 4px 0 rgba(194,65,12,0.10);">
+            <h4 style="color:var(--red);font-size:0.95rem;">❌ 筛选模式（常见但低效）</h4>
+            <ul>
+              <li>让 AI 列出 20 个方案</li>
+              <li>扫一眼，选觉得「可以的」</li>
+              <li>让 AI 把选中的方案深化</li>
+              <li>最终产品——<strong>是 AI 的想象，不是你的洞察</strong></li>
+            </ul>
+          </div>
+          <div class="col-card" style="border-color:var(--accent);box-shadow:4px 4px 0 rgba(36,114,79,0.10);">
+            <h4 style="color:var(--accent);font-size:0.95rem;">✅ 共鸣探索模式</h4>
+            <ul>
+              <li>你说出一个真实感受或模糊直觉</li>
+              <li>AI 给一个角度，你判断「这触动了什么吗？」</li>
+              <li>你说出为什么这个触动了你（或没有）</li>
+              <li>AI 根据你的反应重新探索</li>
+              <li>最终产品——<strong>是你们共同发现的，有你的灵魂</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout human" style="margin-bottom:16px;">
+          <strong>💡 真实案例：发现「生命力」才是核心</strong>
+          在做 Reconnect 时，AI 第一次给出的 PRD 是「帮助用户成长的微行动打卡产品」——功能完整，逻辑清晰。<br><br>
+          但我们没有选，而是提出了一个问题：<em>「这个 PRD 有一个根本问题——它还是在做一个'帮助用户成长'的产品。」</em><br><br>
+          就是这一句质疑，让整个方向发生了转变。AI 不是生成了更好的 PRD——而是<strong>我们的质疑引发了更好的问题</strong>：<br>
+          「她真正缺的不是成长的工具，而是对现实世界的期待感。」<br><br>
+          这个洞察，不是从筛选 AI 方案里来的。是从我们自己对用户的理解里来的。<strong>AI 帮我们把这个洞察说清楚了。</strong>
+        </div>
+
+        <p class="timeline-desc" style="margin-bottom:12px;">
+          <strong>怎么触发这种共鸣探索：</strong>不要问「给我方案」，要说「我有一种感觉，但我说不清楚……」然后描述那个感觉。
+        </p>
+        <div class="copy-row" style="margin-top:12px;">
+          <span class="copy-text">我有一种感觉，但我说不清楚——[描述你的模糊直觉，比如"我觉得现在的方案太像工具了，但我想做的其实是..."]。你觉得这种感觉指向什么方向？先不要给具体方案，帮我把这种感觉说清楚。</span>
+          <button class="copy-btn" data-copy="我有一种感觉，但我说不清楚——[描述你的模糊直觉，比如"我觉得现在的方案太像工具了，但我想做的其实是..."]。你觉得这种感觉指向什么方向？先不要给具体方案，帮我把这种感觉说清楚。">Copy</button>
+        </div>
+        <div class="copy-row" style="margin-top:10px;">
+          <span class="copy-text">你刚才给的方案里，有一个根本问题：[描述你的质疑]。我觉得这不是关于功能的问题，而是关于[什么]的问题。从这个角度重新想，会到哪里？</span>
+          <button class="copy-btn" data-copy="你刚才给的方案里，有一个根本问题：[描述你的质疑]。我觉得这不是关于功能的问题，而是关于[什么]的问题。从这个角度重新想，会到哪里？">Copy</button>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <p class="timeline-title">Step 4 · 原型：让想法可以被触摸</p>
+        <p class="timeline-desc">
+          用 WorkBuddy 快速搭建可交互的原型——HTML 页面或微信小程序。先做核心流程，不追求完美。<br><br>
+          <strong>AI 怎么帮：</strong>写代码、写文案、生成图片。但<strong>你来决定交互逻辑、页面流程、功能优先级</strong>。AI 不知道「先让用户看到什么」比「功能完不完整」更重要。
+        </p>
+        <div class="copy-row" style="margin-top:12px;">
+          <span class="copy-text">基于以下PRD，帮我做最小可交互原型：[粘贴PRD]。只要核心流程——用户第一次打开→看到什么→做什么→得到什么反馈。先不要做完整功能。</span>
+          <button class="copy-btn" data-copy="基于以下PRD，帮我做最小可交互原型：[粘贴PRD]。只要核心流程——用户第一次打开→看到什么→做什么→得到什么反馈。先不要做完整功能。">Copy</button>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <p class="timeline-title">Step 5 · 测试：让用户告诉你答案</p>
+        <p class="timeline-desc">
+          把原型给真实用户用。观察他们：<strong>在哪里犹豫了？哪里笑了？哪里直接关掉了？</strong><br><br>
+          <strong>Humanity-in-Loop 关键点：</strong>不要问「你觉得怎么样」——用户说不清。观察行为。AI 帮你记录和分析，但<strong>你要亲自看用户的表情和肢体语言</strong>。
+        </p>
+      </div>
+
+      <div class="timeline-item">
+        <p class="timeline-title">Step 6 · 沉淀：让过程可复用</p>
+        <p class="timeline-desc">
+          把走通的路存下来——对 WorkBuddy 说「把这个工作流程保存为 skill」。下次遇到类似任务，AI 直接按你的方法做。<br><br>
+          <strong>同时：</strong>把调研记录、用户反馈、迭代日志都保存好。这些过程资产比最终产品更有价值——它们证明了你的思考过程。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ §2 实操流程 ════════ -->
+<section class="section" id="practice">
+  <div class="prose" style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+      <span class="chapter-num">§2</span>
+      <span class="chapter-tag">WorkBuddy 实操</span>
+    </div>
+    <h2 style="font-size:clamp(28px,3.5vw,44px);line-height:1.15;margin-bottom:24px;">和 AI 对话的正确姿势</h2>
+
+    <div class="callout warn" style="margin-bottom:28px;">
+      <strong>最常见的错误用法</strong>
+      打开 WorkBuddy 说「帮我做一个 XX 小程序」→ AI 生成一堆代码 → 你看不懂 → 改不了 → 放弃。<br><br>
+      <strong>为什么失败：</strong>你跳过了「共情→定义→构思」，直接让 AI 从零猜你要什么。AI 不知道你的用户是谁、他们需要什么、什么体验是好的。于是产出就是——<strong>功能有了，但灵魂没有</strong>。<br><br>
+      <strong>更深的问题：</strong>你在等 AI 给答案，而不是通过对话发现问题。<strong>好问题比好答案更重要。</strong> AI 会让你停下来，但不会让你反省——反省只能你自己来。
+    </div>
+
+    <div class="step-item">
+      <span class="step-num purple">1</span>
+      <div class="step-content">
+        <h4>准备上下文：让 AI 认识你</h4>
+        <p>WorkBuddy 有记忆机制。第一次使用时，告诉它你是谁、你在做什么项目、你的用户是谁。之后它会自动记住。<br><br>
+        在对话开头这样说：</p>
+        <div class="copy-row" style="margin-top:8px;">
+          <span class="copy-text">我是[学校/项目]的学生。我正在做一个为[目标用户]解决[问题]的产品。我的价值观是[你关心什么]。请记住这些信息。</span>
+          <button class="copy-btn" data-copy="我是[学校/项目]的学生。我正在做一个为[目标用户]解决[问题]的产品。我的价值观是[你关心什么]。请记住这些信息。">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-num green">2</span>
+      <div class="step-content">
+        <h4>调研：先搜索，不急着动手</h4>
+        <p>对 WorkBuddy 说「帮我调研 XX 方向」。它会自动搜索互联网、整理信息、保存调研报告。<br><br>
+        <strong>为什么重要：</strong>你的想法 90% 概率已经有人做过了。先搜能避免重复造轮子，也能找到别人的失败教训。</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-num blue">3</span>
+      <div class="step-content">
+        <h4>需求澄清：让 AI 追问你自己</h4>
+        <p>最关键的一步。不要让 AI 直接给方案——<strong>让它先追问你</strong>。</p>
+        <div class="copy-row" style="margin-top:8px;">
+          <span class="copy-text">你是我的产品合伙人。请不要直接给方案，先连续追问，帮我澄清：1)目标用户到底是谁？2)他们最痛的点是什么？3)现有方案为什么不够？4)我们不做的是什么？5)怎么判断做成了？追问到我回答清楚了再出PRD。</span>
+          <button class="copy-btn" data-copy="你是我的产品合伙人。请不要直接给方案，先连续追问，帮我澄清：1)目标用户到底是谁？2)他们最痛的点是什么？3)现有方案为什么不够？4)我们不做的是什么？5)怎么判断做成了？追问到我回答清楚了再出PRD。">Copy</button>
+        </div>
+        <div class="callout human" style="margin-top:12px;">
+          <strong>🧠 Human-in-the-Loop 的关键时刻</strong>
+          AI 会追问你。每一个追问都是帮你思考——<strong>不要敷衍回答</strong>。如果你答不上来，说明你需要回去和用户聊。<br><br>
+          <strong>更重要的时刻：</strong>当 AI 给出 PRD 后，先不要说「好的继续」。问自己：<em>「这个 PRD 回答的，是我真正想问的问题吗？它里面有没有一个AI不会质疑但应该被质疑的假设？」</em> 如果有，说出来——往往这才是最有价值的一步。你在练习的不是选方案，而是<strong>质疑</strong>。
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-num yellow">4</span>
+      <div class="step-content">
+        <h4>开发：PRD 驱动，不是一句话驱动</h4>
+        <p>有了清晰的 PRD 再开发。对 WorkBuddy 说「按这个 PRD 开始开发」，而不是「帮我做个 XX」。<br><br>
+        <strong>AI 怎么帮：</strong>拆任务、写代码、跑测试、修 bug。但<strong>你来决定功能优先级和验收标准</strong>。</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-num red">5</span>
+      <div class="step-content">
+        <h4>设计：先定方向，再出界面</h4>
+        <p>让 AI 先理解你要什么感觉，再让它写界面代码。</p>
+        <div class="copy-row" style="margin-top:8px;">
+          <span class="copy-text">帮我设计这个产品的界面。视觉方向：[如"光遇式的治愈空灵感"/"Notion式极简"/"多邻国式游戏化"]。目标用户是[谁]，他们看到界面应该感到[什么情绪]。先给我3个视觉方向选择，不要直接写代码。</span>
+          <button class="copy-btn" data-copy="帮我设计这个产品的界面。视觉方向：[如"光遇式的治愈空灵感"/"Notion式极简"/"多邻国式游戏化"]。目标用户是[谁]，他们看到界面应该感到[什么情绪]。先给我3个视觉方向选择，不要直接写代码。">Copy</button>
+        </div>
+        <div class="callout human" style="margin-top:12px;">
+          <strong>💛 人在产品中</strong>
+          选择视觉方向时，<strong>回到用户</strong>：他们看到这个界面，会觉得被理解了，还是被审视了？温暖的还是冰冷的？邀请的还是命令的？<br><br>
+          记住：<strong>AI 不知道「温暖」长什么样</strong>。它知道像素怎么排布，但它不知道一个焦虑的人看到冷色调会怎么缩回去。这是你的共情力在工作的时刻。
+        </div>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <span class="step-num green">6</span>
+      <div class="step-content">
+        <h4>打磨：人的参与，让产品有温度</h4>
+        <p>AI 生成的东西通常「功能正确但灵魂缺失」——按钮文案像说明书，空状态像报错，交互像填表。<strong>这一步必须你来</strong>。</p>
+        <div class="callout human" style="margin-top:8px;">
+          <strong>🧑 检查清单：AI 生成的界面里，有哪些地方让你觉得"不对"？</strong>
+          • 按钮文案是不是命令式的（"完成" "提交" "确认"）？能不能换成邀请式的？<br>
+          • 空状态是不是在强调"你还没有"（缺失感）？能不能换成"即将有"（期待感）？<br>
+          • 数字显示是不是在制造焦虑（"0 篇" "0 天"）？能不能在数量少时隐藏数字？<br>
+          • 用户不想做某件事时，有没有温和的退出方式？<br>
+          • 整个体验是"打卡"还是"邀请"？
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ §3 微信小程序 Best Practice ════════ -->
+<section style="background:var(--paper2);padding:72px 0;margin:0;max-width:100%;" id="miniprogram">
+<div class="section" style="padding-top:0;">
+  <div class="sec-head" style="max-width:100%;">
+    <div>
+      <span class="case-badge">📖 BEST PRACTICE 案例</span>
+      <h2 style="margin-top:16px;">用 WorkBuddy 制作一个<br>温暖治愈的微信小程序</h2>
+    </div>
+    <p class="sec-note">以 Reconnect（帮助宅家年轻人重新出门的治愈小程序）为例，完整展示从 0 到 1 的创作过程。假设你是完全的小白。</p>
+  </div>
+
+  <!-- Phase 0: 环境准备 -->
+  <article class="module">
+    <div>
+      <span class="mod-num purple">P0</span>
+      <h3>环境准备</h3>
+      <p class="mod-summary">开始之前：安装工具、注册账号、理解基本概念</p>
+    </div>
+    <div class="mod-body">
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin-bottom:12px;">你需要安装什么</h4>
+      <table class="tbl">
+        <thead><tr><th>工具</th><th>做什么用</th><th>怎么获取</th></tr></thead>
+        <tbody>
+          <tr><td><strong>WorkBuddy</strong></td><td>AI 协作主战场——写代码、设计界面、调研、写文案都在这里</td><td>浏览器打开 workbuddy.ai，注册登录</td></tr>
+          <tr><td><strong>微信开发者工具</strong></td><td>预览和调试小程序的模拟器</td><td>搜索「微信开发者工具」→ 下载稳定版 → 安装</td></tr>
+          <tr><td><strong>微信小程序 AppID</strong></td><td>小程序的身份证号</td><td>mp.weixin.qq.com → 注册小程序账号 → 开发管理 → AppID</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:16px;">
+        <strong>微信开发者工具快速上手</strong>
+        <ol style="padding-left:20px;margin-top:8px;">
+          <li><strong>创建项目</strong>：打开工具 → 新建项目 → 填入 AppID → 选择「云开发」→ 确认</li>
+          <li><strong>认识界面</strong>：左边是代码编辑器，右边是模拟器（看到小程序的样子），上面是工具栏</li>
+          <li><strong>模拟器</strong>：可以切换不同手机型号查看效果，点击界面就像在真机上操作</li>
+          <li><strong>云开发控制台</strong>：点击工具栏「云开发」→ 可以创建数据库、上传文件、部署云函数</li>
+          <li><strong>预览</strong>：点击「预览」生成二维码 → 手机微信扫码 → 在真机上体验</li>
+        </ol>
+      </div>
+
+      <div class="callout tip" style="margin-top:12px;">
+        <strong>小白最常见的困惑</strong>
+        <strong>Q: 模拟器和真机有什么区别？</strong>模拟器是电脑上模拟手机的效果，大部分功能一样。但有些功能（如微信支付、定位）只能在真机测试。<br>
+        <strong>Q: AppID 和微信号是一回事吗？</strong>不是。AppID 是小程序的身份，微信号是个人的。一个小程序需要一个独立的 AppID。<br>
+        <strong>Q: 云开发是什么？</strong>微信提供的后端服务——数据库、文件存储、云函数，不需要自己搭服务器。免费额度够学习使用。
+      </div>
+    </div>
+  </article>
+
+  <!-- Phase 1: 共情 -->
+  <article class="module">
+    <div>
+      <span class="mod-num green">P1</span>
+      <h3>共情：理解宅家的年轻人</h3>
+      <p class="mod-summary">找到真实的人，倾听他们的困扰</p>
+    </div>
+    <div class="mod-body">
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        Reconnect 的目标用户是长期宅家的年轻人。在写一行代码之前，我们先做了一件最重要的事——<strong>和 3 个目标用户聊了天</strong>。
+      </p>
+      <div class="callout human" style="margin-top:12px;">
+        <strong>🧑 真实访谈发现</strong>
+        • 「我知道应该出门，但想到要社交就觉得累」<br>
+        • 「一个人出去没什么意义」<br>
+        • 「试过出门，但不知道去哪，在楼下站了 5 分钟又回去了」<br>
+        • 「最怕被问'你怎么总是一个人'」<br><br>
+        这些感受，AI 生成不了。只有亲自聊才能听到。
+      </div>
+      <div class="callout info" style="margin-top:12px;">
+        <strong>AI 怎么帮这一步</strong>
+        对 WorkBuddy 说：「帮我设计一份访谈提纲，针对长期宅家的年轻人，了解他们出门的心理障碍」。然后带着提纲去真人访谈，回来把笔记贴给 AI：「帮我从这些笔记里提取关键洞察」。
+      </div>
+    </div>
+  </article>
+
+  <!-- Phase 2: 定义 -->
+  <article class="module">
+    <div>
+      <span class="mod-num blue">P2</span>
+      <h3>定义：从感受到问题</h3>
+      <p class="mod-summary">把碎片化感受变成清晰的问题定义</p>
+    </div>
+    <div class="mod-body">
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        访谈后的关键洞察：<strong>核心障碍不是「不想出门」，而是「出门后不知道做什么」和「害怕被评判」</strong>。
+      </p>
+      <div class="callout" style="margin-top:12px;">
+        <strong>问题定义</strong>
+        「长期宅家的年轻人在想要出门时，因为缺乏低门槛的行动指引和免于评判的心理安全感，而无法将意愿转化为行动。」
+      </div>
+
+      <div class="callout warn" style="margin-top:16px;">
+        <strong>⚠️ 险些犯的根本错误：AI 给的方向，不一定是你的问题</strong>
+        AI 第一次给出的产品方向是「帮助用户成长的微行动系统」——PRD 完整，功能合理，逻辑自洽。<br><br>
+        但认真看，<strong>这个方向回答的不是我们发现的问题</strong>。「成长」预设了用户有向上的动力缺失；而真实访谈告诉我们，她的问题是对现实世界失去了<em>期待感</em>。<br><br>
+        这两个不一样。一个是「缺动力」，一个是「缺期待」。<br><br>
+        如果我们直接用 AI 的第一版 PRD，我们会做出一个用户「应该需要」但实际上<em>不想要</em>的产品。
+      </div>
+
+      <div style="margin-top:20px;border:2px solid var(--accent);background:rgba(47,93,79,0.04);padding:24px;">
+        <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:900;color:var(--accent);letter-spacing:0.1em;margin-bottom:12px;">🧭 思考脚手架：如何判断 AI 给的方向对不对？</p>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:1.8;">
+          不要问「这个方案好不好」——问<strong>三个更根本的问题</strong>：
+        </p>
+        <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:2;margin-top:8px;">
+          <li><strong>它回答的是不是我真正想问的问题？</strong>AI 的PRD逻辑自洽≠它回答了正确的问题。回到你的用户访谈——用户最痛的那个点，这个PRD解决了吗？</li>
+          <li><strong>如果我不做这个方向，用户损失的是什么？</strong>如果答案是「损失了一个功能」——说明方向偏功能；如果答案是「失去了一种感受」——说明方向偏人心。</li>
+          <li><strong>这个方向里，有没有一个AI不会质疑但应该被质疑的假设？</strong>本案例中，AI假设了「用户需要成长」——但真实用户需要的是「生命力」。</li>
+        </ol>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--muted);font-size:0.88rem;line-height:1.7;margin-top:12px;font-style:italic;">
+          这三个问题的共性：它们都在训练你<strong>从AI的答案里发现AI没问的问题</strong>。这种能力——质疑的能力、回到原点的能力——是你在这条路上真正会带走的东西。
+        </p>
+      </div>
+
+      <div class="callout human" style="margin-top:16px;">
+          <strong>💛 人在产品中：文案审查</strong>
+        原始方案中的标签「⏱ 5分钟内 · 🧍 可独立完成 · ✨ 没有失败」——看起来无害，但对目标用户来说：<br>
+        • 「可独立完成」暗示依赖是不好的<br>
+        • 「没有失败」反而让人想起失败（反讽过程理论）<br>
+        • 「5分钟内」制造隐性时间压力<br><br>
+        改成 → 「🍃 很快就好 · 🌸 怎样都好」——<strong>用氛围感替代标签感</strong>。<br>
+        这种审查，只能人来做。AI 不知道「没有失败」这四个字会刺痛谁。
+      </div>
+    </div>
+  </article>
+
+  <!-- Phase 3: 构思 -->
+  <article class="module">
+    <div>
+      <span class="mod-num yellow">P3</span>
+      <h3>构思：对话式探索，不是方案筛选</h3>
+      <p class="mod-summary">一次真实的思维跳跃——从「成长工具」到「生命力产品」</p>
+    </div>
+    <div class="mod-body">
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:16px;">
+        这是 Reconnect 项目里最值得复盘的一段对话。不是为了展示「我们做对了」，而是为了<strong>拆解一个问题</strong>：什么样的对话，能让人机协作产出比任何一方独立工作都更好的结果？
+      </p>
+
+      <!-- 对话展示 -->
+      <div style="border:2px solid var(--ink);background:#fff;padding:0;overflow:hidden;box-shadow:6px 6px 0 rgba(24,23,21,0.08);margin-bottom:20px;">
+        <div style="background:var(--ink);padding:10px 16px;display:flex;gap:10px;align-items:center;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(250,249,247,0.6);">实际对话记录</span>
+          <span style="margin-left:auto;font-family:'Noto Sans SC',sans-serif;font-size:11px;color:rgba(250,249,247,0.3);">Human-in-the-Loop 时刻</span>
+        </div>
+        <div style="padding:20px;">
+          <div style="background:rgba(124,58,237,0.06);border-left:3px solid var(--purple);padding:12px 16px;margin-bottom:14px;">
+            <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px;">AI 第一版 PRD：</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;color:var(--ink2);line-height:1.7;">「帮助用户成长的微行动系统。目标：激活行动力、建立自律……DAU、行动完成率、打卡天数……」</p>
+          </div>
+          <div style="background:rgba(228,173,52,0.08);border-left:3px solid var(--yellow);padding:12px 16px;margin-bottom:14px;">
+            <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px;">🧑 你质疑（这句话改变了方向）：</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;color:var(--ink);line-height:1.7;font-weight:600;">「这个 PRD 有一个根本问题——它还是在做一个「帮助用户成长」的产品。而我妹妹实际上最需要的不是成长，而是重新获得生命力（Vitality）。」</p>
+          </div>
+          <div style="background:rgba(47,93,79,0.06);border-left:3px solid var(--accent);padding:12px 16px;">
+            <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px;">AI 回应后发现的核心洞察：</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;color:var(--ink2);line-height:1.7;">她的问题不是「不知道要运动、社交、学习」，而是：</p>
+            <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);margin-top:8px;line-height:1.9;">
+              现实世界 → 没有期待 → 没有惊喜 → 没有人在等我<br>→ 没有事情值得我做 → 刷手机 → 更加空虚
+            </p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;color:var(--accent);line-height:1.7;margin-top:10px;font-weight:700;">所以产品不是「自律工具」，而是「让世界重新在呼唤你」。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 教学设计角度的复盘 -->
+      <div style="margin-top:20px;border:2px solid var(--blue);background:rgba(33,95,184,0.04);padding:24px;">
+        <p style="font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:900;color:var(--blue);letter-spacing:0.1em;margin-bottom:12px;">🔍 复盘：这个转折为什么值得学习？</p>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:1.8;margin-bottom:12px;">
+          很多同学会把这个案例理解为「AI给的方案不好，所以我自己想了个更好的」。但<strong>这不是重点</strong>。
+        </p>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:1.8;margin-bottom:12px;">
+          重点是：<strong>转折发生在哪里？发生在人质疑AI的假设的那一刻</strong>。AI假设用户需要「成长」——这是一个逻辑上完全自洽的假设。但人的共情力和对用户的直觉说：不对，她需要的不是成长，是生命力。
+        </p>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:1.8;margin-bottom:12px;">
+          <strong>可迁移的理解</strong>：人机协作中最重要的不是你的设计能力，也不是你的编程能力，而是<strong>你在AI给出一个逻辑自洽的方案后，还能问出「它回答的是我真正想问的问题吗？」的能力</strong>。这种能力——我们叫它<strong>元认知</strong>——是可以迁移到任何领域的。
+        </p>
+        <p style="font-family:'Noto Sans SC',sans-serif;color:var(--muted);font-size:0.88rem;line-height:1.7;font-style:italic;">
+          换一个场景：你在用AI做市场营销，AI给了你一个转化率优化的方案——逻辑自洽，数据支撑。但如果你能问「我们优化的是转化率还是用户的信任？」你就可能发现一个AI看不到的维度。
+        </p>
+      </div>
+
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-top:16px;margin-bottom:12px;">
+        这次探索之后，发散收敛，选择了微信小程序 + 治愈风格：
+      </p>
+      <table class="tbl" style="margin-top:12px;">
+        <thead><tr><th>选择</th><th>为什么</th><th>洞察来源</th><th>你在哪里能迁移这个思路</th></tr></thead>
+        <tbody>
+          <tr><td><strong>微信小程序</strong></td><td>不需要下载——下载本身就是门槛</td><td>用户访谈</td><td>任何需要降低用户使用门槛的场景</td></tr>
+          <tr><td><strong>每日一个任务</strong></td><td>降低决策负担——不是「你想做什么」而是「要不要去看看」</td><td>人质疑AI假设后</td><td>当你的用户处于低能量状态时</td></tr>
+          <tr><td><strong>光遇式美学</strong></td><td>不是模仿画风，而是模仿那种「前面好像还有什么」的期待感</td><td>人机共同发现</td><td>当你需要激发好奇心而非执行任务时</td></tr>
+          <tr><td><strong>星图系统</strong></td><td>进度可视化——不强调数字，强调「你点亮的是自己的生活」</td><td>人审查AI方案</td><td>当量化指标会伤害目标用户时</td></tr>
+          <tr><td><strong>旅人日记</strong></td><td>记录感受——可选，不是必须</td><td>人性原则</td><td>当你要设计「低压力的自我表达」时</td></tr>
+        </tbody>
+      </table>
+      <div class="callout info" style="margin-top:12px;">
+        <strong>在 WorkBuddy 里怎么操作</strong>
+        对 AI 说：「帮我调研：帮助宅家年轻人出门的产品有哪些？微信小程序有什么优势？」→ 然后「基于调研，帮我用需求澄清工作流把想法变成 PRD」。<br><br>
+        PRD 出来后，<strong>先不要说继续</strong>。用上面的三个问题问自己——然后把你发现的问题告诉 AI。这一步，比任何一个功能都重要。
+      </div>
+    </div>
+  </article>
+
+  <!-- Phase 4: 原型 -->
+  <article class="module">
+    <div>
+      <span class="mod-num red">P4</span>
+      <h3>原型：AI 搭骨架，人填灵魂</h3>
+      <p class="mod-summary">用 WorkBuddy 快速搭建，但关键体验你来定</p>
+    </div>
+    <div class="mod-body">
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin-bottom:12px;">Step 1：让 AI 搭建项目骨架</h4>
+      <div class="copy-row">
+        <span class="copy-text">帮我创建一个微信小程序项目。使用云开发。页面结构：1)旅程页（每日任务）2)旅人日记 3)星图 4)引导页。视觉风格：光遇式治愈空灵——奶油色背景、玻璃拟态卡片、金色点缀。先做核心框架，不用完美。</span>
+        <button class="copy-btn" data-copy="帮我创建一个微信小程序项目。使用云开发。页面结构：1)旅程页（每日任务）2)旅人日记 3)星图 4)引导页。视觉风格：光遇式治愈空灵——奶油色背景、玻璃拟态卡片、金色点缀。先做核心框架，不用完美。">Copy</button>
+      </div>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">Step 2：用专家团分工协作</h4>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        WorkBuddy 内置了<strong>AI 内容创作专家团</strong>——当你的需求涉及文案、图片、视频等多种内容时，可以调度不同专家并行工作：
+      </p>
+      <table class="tbl" style="margin-top:12px;">
+        <thead><tr><th>专家</th><th>擅长</th><th>什么时候调度</th></tr></thead>
+        <tbody>
+          <tr><td><strong>✍️ 文案（copywriter）</strong></td><td>公众号长文、社媒短文案、视频脚本</td><td>需要写治愈文案、按钮文字、空态提示时</td></tr>
+          <tr><td><strong>🎨 图片（image-creator）</strong></td><td>文生图、图生图、批量生成</td><td>需要封面图、引导页插画、空态插图时</td></tr>
+          <tr><td><strong>🎬 视频（video-generator）</strong></td><td>文生视频、图生视频</td><td>需要宣传视频、动态背景时</td></tr>
+          <tr><td><strong>✂️ 剪辑（video-editor）</strong></td><td>裁剪、拼接、字幕、转场</td><td>需要把多个视频片段合成时</td></tr>
+          <tr><td><strong>🔄 改编（content-adapter）</strong></td><td>视频分析、翻译、多媒体合成</td><td>需要从长视频提取精彩片段、翻译时</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>怎么调度专家团</strong>
+        直接在对话中描述需求，WorkBuddy 会自动组建团队并分配任务。例如：<br>
+        「帮我为这个小程序创作治愈风格的文案和配图。文案要温暖但不说教，图片要光遇式水彩风格。」<br><br>
+        你也可以<strong>安装 Skills</strong> 来增强 WorkBuddy 的能力——相当于给 AI 装插件。对 WorkBuddy 说「帮我找一个 XX 方向的 skill」，它会搜索可用的技能包。
+      </div>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">Step 3：在微信开发者工具中预览</h4>
+      <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        <li>WorkBuddy 生成的代码保存在项目目录中</li>
+        <li>用微信开发者工具打开项目目录</li>
+        <li>模拟器自动显示小程序效果</li>
+        <li>发现问题 → 回到 WorkBuddy 描述问题 → AI 修改 → 刷新模拟器看效果</li>
+      </ol>
+      <div class="callout tip" style="margin-top:12px;">
+        <strong>高效迭代技巧</strong>
+        不要等所有功能都做完再看效果——<strong>做一点看一点</strong>。发现模拟器里按钮位置不对，马上回 WorkBuddy 说「按钮太靠右了，往左移一点」。这种小修改 AI 几秒钟就能改好。
+      </div>
+    </div>
+  </article>
+
+  <!-- Phase 5: 你的成长 -->
+  <article class="module" id="human-touch">
+    <div>
+      <span class="mod-num green">P5</span>
+      <h3>你的成长：<br>协作中真正带走的东西</h3>
+      <p class="mod-summary">AI 的能力边界，就是你成长的起点</p>
+    </div>
+    <div class="mod-body">
+      <div class="callout warn" style="margin-bottom:16px;">
+        <strong>AI 的硬性限制</strong>
+        AI 可以写代码、写文案、生成图片——但它<strong>做不到</strong>：<br>
+        • 感受用户看到某个文案时的情绪反应<br>
+        • 判断两张图哪张更「温暖」而不是更「精致」<br>
+        • 理解为什么「没有失败」这四个字会刺痛特定人群<br>
+        • 创造有文化质感的动画（如中式水墨渐变 vs 西式 slide-in）<br>
+        • 生成完美适配小程序尺寸和像素密度的图片<br>
+        • 从零制作原创音效和背景音乐
+      </div>
+
+      <table class="tbl">
+        <thead><tr><th>AI 能做的</th><th>AI 做不好的</th><th>你该怎么做</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>UI 代码</strong>：写出 90% 正确的布局和样式</td>
+            <td>微调间距、圆角、动画曲线的「手感」</td>
+            <td>在开发者工具中手动调 CSS 数值，直到「感觉对了」</td>
+          </tr>
+          <tr>
+            <td><strong>文案</strong>：生成大量候选文案</td>
+            <td>判断文案的语气是否真正温暖而非 AI 腔</td>
+            <td>逐条审查：问自己「用户看到这句会感觉被理解还是被审视？」</td>
+          </tr>
+          <tr>
+            <td><strong>图片</strong>：生成风格化插画</td>
+            <td>精确控制构图、颜色一致性、细节准确度</td>
+            <td>选择最接近的 AI 图片 → 用图片编辑工具微调 → 或者手绘后用 AI 风格化</td>
+          </tr>
+          <tr>
+            <td><strong>动画</strong>：写出 CSS 动画代码</td>
+            <td>判断动画速度是否「舒服」</td>
+            <td>在模拟器中反复测试，手动调 duration 和 timing-function</td>
+          </tr>
+          <tr>
+            <td><strong>音频</strong>：推荐音效来源</td>
+            <td>从零制作原创 BGM 和音效</td>
+            <td>从 freesound.org / pixabay.com 下载免费音效 → 用音频编辑工具裁剪</td>
+          </tr>
+          <tr>
+            <td><strong>用户体验</strong>：按 PRD 实现功能</td>
+            <td>理解微妙的心理感受</td>
+            <td>让真实用户使用 → 观察行为 → 回来改文案和交互</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">实际案例：Reconnect 的「人」的修改</h4>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:12px;">
+        以下是我们在 Reconnect 项目中发现 AI 做不到位、必须人介入的具体修改：
+      </p>
+      <table class="tbl">
+        <thead><tr><th>AI 原始输出</th><th>人的修改</th><th>为什么改</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>任务标签：⏱ 5分钟内 · 🧍 可独立完成 · ✨ 没有失败</td>
+            <td>🍃 很快就好 · 🌸 怎样都好</td>
+            <td>「没有失败」触发反讽过程——反而想起失败；「可独立」暗示独立是常态</td>
+          </tr>
+          <tr>
+            <td>按钮：我完成了</td>
+            <td>去看看 →</td>
+            <td>「完成」制造达标/未达标的二元压力</td>
+          </tr>
+          <tr>
+            <td>空态：还没有一条旅记</td>
+            <td>你的第一页故事正等着被写下</td>
+            <td>前者强调缺失，后者创造期待</td>
+          </tr>
+          <tr>
+            <td>日记提示：你还有一段旅程没有记录</td>
+            <td>今天遇到了什么？</td>
+            <td>前者制造愧疚，后者是好奇心的邀请</td>
+          </tr>
+          <tr>
+            <td>完成后自动跳转日记页</td>
+            <td>停在完成页，让用户选择</td>
+            <td>强制跳转剥夺自主感——对宅家者尤甚</td>
+          </tr>
+          <tr>
+            <td>字数统计：45/140</td>
+            <td>接近上限时才显示：25 字空间</td>
+            <td>持续的数字计数制造写作焦虑</td>
+          </tr>
+          <tr>
+            <td>没有「今天不想去」的选项</td>
+            <td>新增「今天先不了」+ 休息卡片</td>
+            <td>用户被困在任务里无法退出 → 愧疚 → 放弃使用</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout human" style="margin-top:16px;">
+        <strong>💛 Humanity-in-Loop 审查框架</strong>
+        每个界面元素都过一遍这个检查清单：<br><br>
+        <strong>1. 语气审查</strong>：这个文案是命令还是邀请？是审视还是理解？<br>
+        <strong>2. 缺失审查</strong>：空状态在强调「你还没有」还是「即将有」？<br>
+        <strong>3. 量化审查</strong>：数字在制造焦虑吗？数量少时能隐藏数字吗？<br>
+        <strong>4. 自主审查</strong>：用户有选择权吗？不想做时能温和退出吗？<br>
+        <strong>5. 共情审查</strong>：如果你的目标用户看到这个，会怎么想？
+      </div>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">图片：AI 生成 + 人工精选</h4>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        AI 生成的图片 80% 可用，但需要你精选和微调：
+      </p>
+      <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:12px;">
+        <li>用 WorkBuddy 的图片生成功能（对 AI 说「帮我生成一张 XX 风格的图」）</li>
+        <li>生成 3-5 张候选，选择最符合情感调性的那张</li>
+        <li>如果构图不满意，修改 Prompt 重新生成</li>
+        <li>用免费工具（如 Photopea 在线 PS）做最后的裁剪和色调调整</li>
+        <li>在微信开发者工具中检查实际显示效果——AI 图片经常尺寸不匹配</li>
+      </ol>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">动画：AI 写代码 + 人调手感</h4>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        AI 能写出正确的动画代码，但「手感」需要你调：
+      </p>
+      <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:12px;">
+        <li>让 AI 生成动画（如「给卡片加入场动画，从下方滑入带淡入」）</li>
+        <li>在模拟器中反复看——太快？太慢？弹性不够？</li>
+        <li>告诉 AI 微调：「动画太快了，改成 0.5 秒，加 ease-out」</li>
+        <li>关键数值（duration、timing-function、delay）<strong>最终由你的感觉决定</strong></li>
+      </ol>
+
+      <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:20px 0 12px;">音效：AI 推荐 + 人工选配</h4>
+      <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);">
+        AI 目前不能从零生成音效，但可以帮你：
+      </p>
+      <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:12px;">
+        <li>推荐免费音效来源：freesound.org、pixabay.com/sound-effects</li>
+        <li>描述你需要的音效风格：「温暖的叮咚声，不要太尖锐，像风吹风铃」</li>
+        <li>你下载后，用 Audacity（免费音频编辑器）裁剪和调音量</li>
+        <li>在微信开发者工具中测试实际播放效果</li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- Phase 6: 部署 -->
+  <article class="module">
+    <div>
+      <span class="mod-num blue">P6</span>
+      <h3>部署：让产品到达用户</h3>
+      <p class="mod-summary">小程序的部署和发布流程</p>
+    </div>
+    <div class="mod-body">
+      <table class="tbl">
+        <thead><tr><th>步骤</th><th>在开发者工具里怎么做</th><th>注意</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1. 配置云开发</strong></td><td>工具栏 → 云开发 → 开通 → 创建环境</td><td>记下云环境 ID，填入 app.js</td></tr>
+          <tr><td><strong>2. 部署云函数</strong></td><td>左栏 cloudfunctions/ → 右键每个函数 → 上传并部署</td><td>每个云函数都要单独部署</td></tr>
+          <tr><td><strong>3. 创建数据库</strong></td><td>云开发控制台 → 数据库 → 添加集合</td><td>权限设为「仅创建者可读写」</td></tr>
+          <tr><td><strong>4. 上传素材</strong></td><td>云开发控制台 → 存储 → 上传音频文件</td><td>记下 fileID，填入代码</td></tr>
+          <tr><td><strong>5. 预览测试</strong></td><td>点击「预览」→ 扫码 → 真机测试</td><td>一定要真机测！模拟器 ≠ 真机</td></tr>
+          <tr><td><strong>6. 提交审核</strong></td><td>点击「上传」→ 填版本号 → mp.weixin.qq.com 提交审核</td><td>审核需 1-7 天</td></tr>
+        </tbody>
+      </table>
+      <div class="callout tip" style="margin-top:12px;">
+        <strong>开发阶段快速预览</strong>
+        不需要每次都上传和审核。在开发者工具里点「编译」就能即时看到修改效果。开发阶段用模拟器 + 预览就够了，只有最终发布才需要提交审核。
+      </div>
+    </div>
+  </article>
+</div>
+</section>
+
+<!-- ════════ §4 工具箱 ════════ -->
+<section class="section" id="skills">
+  <div class="prose" style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+      <span class="chapter-num">§3</span>
+      <span class="chapter-tag">工具箱</span>
+    </div>
+    <h2 style="font-size:clamp(28px,3.5vw,44px);line-height:1.15;margin-bottom:24px;">WorkBuddy 内置能力 + Skills 配置</h2>
+
+    <h4 style="font-family:'Noto Sans SC',sans-serif;font-size:1.1rem;font-weight:800;margin:0 0 14px;">核心 Skills（直接说触发词即可）</h4>
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-tag">调研</span>
+        <h3>research-workflow</h3>
+        <p>L1/L2/L3 三级深度调研。触发：「帮我调研…」</p>
+      </div>
+      <div class="card">
+        <span class="card-tag">需求</span>
+        <h3>requirement-discovery</h3>
+        <p>把模糊 idea 追问成 PRD。触发：「我有个想法…」</p>
+      </div>
+      <div class="card">
+        <span class="card-tag">开发</span>
+        <h3>auto-dev</h3>
+        <p>PRD 驱动的闭环开发。触发：「按 PRD 开发」</p>
+      </div>
+      <div class="card">
+        <span class="card-tag">设计</span>
+        <h3>frontend-design</h3>
+        <p>先定视觉方向再开发。触发：「设计一个…界面」</p>
+      </div>
+      <div class="card">
+        <span class="card-tag">内容</span>
+        <h3>AI 内容创作专家团</h3>
+        <p>文案+图片+视频多模态协作。触发：「帮我创作…内容」</p>
+      </div>
+      <div class="card">
+        <span class="card-tag">部署</span>
+        <h3>cloudstudio-deploy</h3>
+        <p>部署网页到云端公网访问。触发：「帮我部署…」</p>
+      </div>
+    </div>
+
+    <h4 style="font-family:'Noto Sans SC',sans-serif;font-size:1.1rem;font-weight:800;margin:32px 0 14px;">怎么安装新 Skill</h4>
+    <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:16px;">
+      如果你想给 WorkBuddy 增加新能力（比如 Figma 读取、特定框架支持），可以这样：
+    </p>
+    <div class="copy-row">
+      <span class="copy-text">帮我找一个可以[描述能力]的 skill。比如：「帮我找一个可以读取 Figma 设计稿的 skill」</span>
+      <button class="copy-btn" data-copy="帮我找一个可以[描述能力]的 skill。比如：「帮我找一个可以读取 Figma 设计稿的 skill」">Copy</button>
+    </div>
+    <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-top:12px;">
+      WorkBuddy 会搜索可用的 Skill，找到后你确认安装。安装后直接用触发词调用。
+    </p>
+
+    <h4 style="font-family:'Noto Sans SC',sans-serif;font-size:1.1rem;font-weight:800;margin:32px 0 14px;">怎么保存自己的 Skill</h4>
+    <p style="font-family:'Noto Sans SC',sans-serif;color:var(--ink2);margin-bottom:16px;">
+      当你走通了一个完整的工作流，把它保存下来让 AI 下次自动执行：
+    </p>
+    <div class="copy-row">
+      <span class="copy-text">把刚才的工作流程保存为 skill，命名为"[skill名称]"。这样下次遇到类似任务我可以直接触发。</span>
+      <button class="copy-btn" data-copy="把刚才的工作流程保存为 skill，命名为"[skill名称]"。这样下次遇到类似任务我可以直接触发。">Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 金句 ════════ -->
+<section class="quotes-section" id="quotes">
+  <div style="max-width:1120px;margin:0 auto;padding:0 28px;">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:36px;">
+      <span class="chapter-num" style="color:#c4b5fd;">金句</span>
+      <span class="chapter-tag" style="color:rgba(250,249,247,0.5);">沉淀</span>
+    </div>
+    <blockquote>「人和 AI 不是上下游——是同一个 Loop 里的两个思考者。协作的本质是彼此激发，直到触动了真正重要的东西。」</blockquote>
+    <blockquote>「好问题比好答案更重要。AI 会让你停下来，但不会让你反省——反省只能你自己来。」</blockquote>
+    <blockquote>「你在这次协作中真正会带走的，不是产品本身，而是那种在AI给出逻辑自洽的答案后还能质疑的元能力。」</blockquote>
+    <blockquote>「缺了人的元能力，AI 产出的是精致的平庸；缺了AI的计算力，人的洞察停在模糊的直觉。两者相乘，不是相加。」</blockquote>
+    <blockquote>「每个文案、每个按钮、每个空态，都问：真实用户看到会怎么想？」</blockquote>
+    <blockquote>「种花不种草——说'是什么'，不说'不是什么'。」</blockquote>
+    <blockquote>「你在这次协作中真正会带走的，不是产品本身，而是那种在AI给出逻辑自洽的答案后还能质疑的元能力。」</blockquote>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>AI Native 产品创作指南 · 2026年6月 · Human-in-the-Loop</span>
+    <span>共情 → 定义 → 构思 → 原型 → 测试 → 沉淀</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">已复制</div>
+
+<script>
+  const bar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    bar.style.width = pct + '%';
+  }, {passive:true});
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold: 0.10});
+  document.querySelectorAll('.fade-up, .step-item, .card, .module, .col-card, .timeline-item').forEach(el => io.observe(el));
+
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        btn.classList.add('copied'); const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        showToast('已复制到剪贴板');
+        setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1200);
+      } catch { showToast('复制失败，请手动选择'); }
+    });
+  });
+</script>
+
+</body>
+</html>
