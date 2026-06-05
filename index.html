@@ -1201,8 +1201,23 @@
     <div class="mod-body">
       <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin-bottom:12px;">Step 1：让 AI 搭建项目骨架</h4>
       <div class="copy-row">
-        <span class="copy-text">帮我创建一个微信小程序项目。使用云开发。页面结构：1)旅程页（每日任务）2)旅人日记 3)星图 4)引导页。视觉风格：光遇式治愈空灵——奶油色背景、玻璃拟态卡片、金色点缀。先做核心框架，不用完美。</span>
-        <button class="copy-btn" data-copy="帮我创建一个微信小程序项目。使用云开发。页面结构：1)旅程页（每日任务）2)旅人日记 3)星图 4)引导页。视觉风格：光遇式治愈空灵——奶油色背景、玻璃拟态卡片、金色点缀。先做核心框架，不用完美。">复制</button>
+        <span class="copy-text">帮我创建一个微信小程序项目。使用云开发（wx.cloud）。主要页面：1)旅程页 index（每日任务）2)旅人日记 diary 3)星图 starmap 4)引导页 onboarding。底部导航 tabBar 包含旅程、日记、星图三个 Tab。视觉风格：奶油色背景、玻璃拟态卡片、金色点缀。先生成完整目录结构和 app.json 配置，再逐页实现。</span>
+        <button class="copy-btn" data-copy="帮我创建一个微信小程序项目。使用云开发（wx.cloud）。主要页面：1)旅程页 index（每日任务）2)旅人日记 diary 3)星图 starmap 4)引导页 onboarding。底部导航 tabBar 包含旅程、日记、星图三个 Tab。视觉风格：奶油色背景、玻璃拟态卡片、金色点缀。先生成完整目录结构和 app.json 配置，再逐页实现。">复制</button>
+      </div>
+
+      <div class="callout info" style="margin-top:14px;">
+        <strong>📁 微信小程序的标准目录结构</strong>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;display:block;margin-top:8px;line-height:2;color:var(--ink);">
+          app.js &nbsp;&nbsp;&nbsp;&nbsp;← 全局逻辑（初始化云环境、全局数据）<br>
+          app.json &nbsp;&nbsp;← 全局配置（页面列表、tabBar、窗口样式）<br>
+          app.wxss &nbsp;&nbsp;← 全局样式<br>
+          pages/ &nbsp;&nbsp;&nbsp;&nbsp;← 每个页面一个文件夹<br>
+          &nbsp;&nbsp;index/ &nbsp;&nbsp;&nbsp;← index.wxml / .wxss / .js / .json<br>
+          &nbsp;&nbsp;diary/<br>
+          &nbsp;&nbsp;starmap/<br>
+          cloudfunctions/ ← 云函数（每个功能一个文件夹）
+        </span>
+        <p style="margin-top:10px;font-size:0.9rem;">WorkBuddy 会自动生成这套结构，你只需确认 <strong>app.json 里的 pages 列表</strong>和 <strong>tabBar 配置</strong>是否和你的设计一致。</p>
       </div>
 
       <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:24px 0 12px;">Step 2：用 Skills 增强 AI 能力</h4>
@@ -1210,27 +1225,35 @@
         WorkBuddy 支持安装 Skills（技能包）来扩展 AI 的能力。对于小程序开发，以下 Skills 特别有用：
       </p>
       <table class="tbl" style="margin-top:12px;">
-        <thead><tr><th>Skill</th><th>做什么用</th><th>怎么用</th></tr></thead>
+        <thead><tr><th>Skill</th><th>做什么用</th><th>怎么触发</th></tr></thead>
         <tbody>
-          <tr><td><strong>requirement-discovery</strong></td><td>把模糊想法追问成清晰PRD</td><td>直接说「我有个想法…」触发</td></tr>
-          <tr><td><strong>auto-dev</strong></td><td>PRD驱动的全闭环开发</td><td>说「按PRD开发」触发</td></tr>
-          <tr><td><strong>frontend-design</strong></td><td>先定视觉方向再出界面</td><td>说「设计XX界面」触发</td></tr>
-          <tr><td><strong>research-workflow</strong></td><td>三级深度调研</td><td>说「帮我调研XX」触发</td></tr>
+          <tr><td><strong>wechat-miniprogram</strong></td><td>微信小程序开发专属知识库，WXML/WXSS/云开发 API 全覆盖</td><td>说「帮我开发小程序…」自动触发</td></tr>
+          <tr><td><strong>requirement-discovery</strong></td><td>把模糊想法追问成清晰PRD，明确功能边界</td><td>说「我有个想法…」或「帮我澄清需求」</td></tr>
+          <tr><td><strong>auto-dev</strong></td><td>PRD驱动的全闭环开发，自动拆任务、写代码、跑测试、修Bug</td><td>说「按PRD开发」或「开始开发」</td></tr>
+          <tr><td><strong>frontend-design</strong></td><td>先定视觉方向、配色风格，再生成界面代码</td><td>说「帮我设计XX界面」</td></tr>
+          <tr><td><strong>research-workflow</strong></td><td>L1/L2/L3 三级深度调研，自动搜索整理报告</td><td>说「帮我调研XX」</td></tr>
         </tbody>
       </table>
       <div class="callout info" style="margin-top:12px;">
         <strong>怎么安装 Skill</strong>
-        对 WorkBuddy 说：「帮我找一个可以[描述能力]的 skill」。找到后确认安装，之后直接用触发词调用。
+        对 WorkBuddy 说：「帮我找一个可以[描述能力]的 skill」。WorkBuddy 会搜索 Skill 市场，找到后确认安装，之后直接用触发词调用。<br><br>
+        <strong>已安装哪些 Skill？</strong>输入 `/help` 或在对话中问「我现在装了哪些 skill？」
       </div>
 
       <h4 style="font-family:'Noto Sans SC',sans-serif;font-weight:800;margin:24px 0 12px;">Step 3：在微信开发者工具中预览和迭代</h4>
       <ol style="padding-left:20px;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);font-size:0.93rem;line-height:2;">
-        <li>WorkBuddy 生成的代码保存在项目目录中</li>
-        <li>用微信开发者工具打开项目目录</li>
-        <li>模拟器自动显示小程序效果</li>
-        <li>发现问题 → 回到 WorkBuddy 描述问题 → AI 修改 → 刷新看效果</li>
-        <li><strong>不要等所有功能都做完再看效果——做一点看一点</strong></li>
+        <li>WorkBuddy 生成的代码保存在项目目录中（注意记下路径）</li>
+        <li>打开「微信开发者工具」→ 新建项目 → 选择项目目录 → 填入 AppID</li>
+        <li>左侧模拟器自动显示小程序效果，右侧可查看代码结构</li>
+        <li>发现问题 → 回到 WorkBuddy 描述问题（可直接贴错误信息）→ AI 修改 → 回到开发者工具按 <strong>Ctrl+S</strong> 保存 → 模拟器自动刷新</li>
+        <li>想看真机效果 → 点右上角「预览」→ 手机扫码</li>
+        <li><strong>核心原则：做一点看一点——别等所有功能写完才看效果</strong></li>
       </ol>
+      <div class="callout tip" style="margin-top:12px;">
+        <strong>💡 Debug 小技巧</strong>
+        开发者工具底部 Console 标签页会显示报错信息。遇到错误直接复制错误内容，贴给 WorkBuddy：「遇到这个报错，帮我解决：[粘贴报错]」。<br><br>
+        <strong>云开发常见坑：</strong>如果调用 <code>wx.cloud.callFunction</code> 失败，先检查 <code>app.js</code> 的 <code>wx.cloud.init({ env: '你的云环境ID' })</code> 是否填写正确。
+      </div>
     </div>
   </article>
 
@@ -1300,23 +1323,56 @@
     <div>
       <span class="mod-num teal">P6</span>
       <h3>部署：让产品到达用户</h3>
-      <p class="mod-summary">小程序的部署和发布流程</p>
+      <p class="mod-summary">小程序云开发部署和发布完整流程</p>
     </div>
     <div class="mod-body">
       <table class="tbl">
-        <thead><tr><th>步骤</th><th>怎么做</th><th>注意</th></tr></thead>
+        <thead><tr><th>步骤</th><th>怎么做</th><th>注意事项</th></tr></thead>
         <tbody>
-          <tr><td><strong>1. 配置云开发</strong></td><td>工具栏 → 云开发 → 开通 → 创建环境</td><td>记下云环境 ID，填入 app.js</td></tr>
-          <tr><td><strong>2. 部署云函数</strong></td><td>左栏 cloudfunctions/ → 右键每个函数 → 上传并部署</td><td>每个云函数都要单独部署</td></tr>
-          <tr><td><strong>3. 创建数据库</strong></td><td>云开发控制台 → 数据库 → 添加集合</td><td>权限设为「仅创建者可读写」</td></tr>
-          <tr><td><strong>4. 上传素材</strong></td><td>云开发控制台 → 存储 → 上传音频/图片文件</td><td>记下 fileID，填入代码</td></tr>
-          <tr><td><strong>5. 预览测试</strong></td><td>点击「预览」→ 扫码 → 真机测试</td><td>一定要真机测！模拟器 ≠ 真机</td></tr>
-          <tr><td><strong>6. 提交审核</strong></td><td>点击「上传」→ 填版本号 → mp.weixin.qq.com 提交审核</td><td>审核需 1-7 天</td></tr>
+          <tr>
+            <td><strong>1. 开通云开发环境</strong></td>
+            <td>开发者工具 → 工具栏「云开发」→ 开通 → 创建环境（选「按量计费」）</td>
+            <td>记下环境 ID（格式如 <code>innox-xxx</code>），填入 <code>app.js</code> 的 <code>wx.cloud.init({ env: 'xxx' })</code></td>
+          </tr>
+          <tr>
+            <td><strong>2. 部署云函数</strong></td>
+            <td>左侧文件树 → <code>cloudfunctions/</code> → 右键每个云函数目录 → 「上传并部署（云端安装依赖）」</td>
+            <td>每个云函数要<strong>单独部署</strong>；首次部署较慢，等提示「部署成功」再进行下一步</td>
+          </tr>
+          <tr>
+            <td><strong>3. 初始化数据库</strong></td>
+            <td>云开发控制台（点工具栏「云开发」）→ 数据库 → 「+」新建集合（如 <code>tasks</code> / <code>diary</code>）</td>
+            <td>权限建议：「仅创建者可读写」；集合名称要和代码里的 <code>db.collection('xxx')</code> 保持一致</td>
+          </tr>
+          <tr>
+            <td><strong>4. 上传静态资源</strong></td>
+            <td>云开发控制台 → 存储 → 上传图片/音频文件</td>
+            <td>上传后右键文件可复制 <code>fileID</code>（格式 <code>cloud://xxx</code>），填入代码</td>
+          </tr>
+          <tr>
+            <td><strong>5. 真机预览测试</strong></td>
+            <td>开发者工具右上角「预览」→ 手机微信扫码 → 真机查看效果</td>
+            <td>⚠️ <strong>一定要真机测</strong>！模拟器滚动、动画效果和真机差别大</td>
+          </tr>
+          <tr>
+            <td><strong>6. 上传并提交审核</strong></td>
+            <td>右上角「上传」→ 填版本号和备注 → 登录 <a href="https://mp.weixin.qq.com" target="_blank" style="color:var(--leaf);">mp.weixin.qq.com</a> → 版本管理 → 提交审核</td>
+            <td>审核一般 1-3 天；审核通过后在管理后台点「发布」才正式上线</td>
+          </tr>
         </tbody>
       </table>
-      <div class="callout tip" style="margin-top:12px;">
-        <strong>开发阶段快速预览</strong>
-        不需要每次都上传和审核。在开发者工具里点「编译」就能即时看到修改效果。开发阶段用模拟器 + 预览就够了，只有最终发布才需要提交审核。
+
+      <div class="callout tip" style="margin-top:16px;">
+        <strong>🚀 开发阶段：不需要每次都提交审核</strong>
+        日常开发修改代码后，在开发者工具里按 <strong>Ctrl+S</strong> 保存，模拟器会自动刷新。只有当你想让别人（非开发者）测试时，才需要「上传」→「体验版」扫码——正式发布才需要提交审核。
+      </div>
+
+      <div class="callout warn" style="margin-top:12px;">
+        <strong>⚠️ 最常见的部署踩坑</strong>
+        • <strong>环境 ID 填错</strong>：<code>wx.cloud.init</code> 里的 env 必须和控制台一致<br>
+        • <strong>域名未配置</strong>：小程序请求外部接口需要在后台「开发设置」里配置合法域名<br>
+        • <strong>云函数忘记部署</strong>：改了云函数代码后必须重新上传部署，否则线上还是旧代码<br>
+        • <strong>图片用网络路径而非 cloud:// </strong>：小程序不支持直接引用 http 图片（需要配置域名白名单或用云存储）
       </div>
     </div>
   </article>
@@ -1346,22 +1402,27 @@
     <div class="card">
       <span class="card-tag">需求</span>
       <h3>requirement-discovery</h3>
-      <p>把模糊 idea 追问成 PRD。触发：「我有个想法…」</p>
+      <p>把模糊 idea 追问成 PRD。触发：「我有个想法…」「帮我澄清需求」</p>
     </div>
     <div class="card">
       <span class="card-tag">开发</span>
       <h3>auto-dev</h3>
-      <p>PRD 驱动的闭环开发。触发：「按 PRD 开发」</p>
+      <p>PRD 驱动的闭环开发，自动拆任务写代码修Bug。触发：「按 PRD 开发」「开始开发」</p>
     </div>
     <div class="card">
       <span class="card-tag">设计</span>
       <h3>frontend-design</h3>
-      <p>先定视觉方向再开发。触发：「设计一个…界面」</p>
+      <p>先定视觉方向再生成界面代码。触发：「帮我设计…界面」「做前端」</p>
+    </div>
+    <div class="card">
+      <span class="card-tag">小程序</span>
+      <h3>wechat-miniprogram</h3>
+      <p>微信小程序专属知识库：WXML/WXSS/API/云开发全覆盖。触发：「帮我开发小程序…」</p>
     </div>
     <div class="card">
       <span class="card-tag">部署</span>
       <h3>cloudstudio-deploy</h3>
-      <p>部署网页到云端公网访问。触发：「帮我部署…」</p>
+      <p>把 HTML 网页部署到云端公网访问（适合 Web 产品）。触发：「帮我部署…」「发布到公网」</p>
     </div>
   </div>
 
